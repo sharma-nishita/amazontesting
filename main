@@ -1,0 +1,78 @@
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import java.time.Duration;
+
+public class Main {
+    private WebDriver driver;
+    private WebDriverWait wait;
+
+    @BeforeTest
+    public void setUp() {
+        System.setProperty("webdriver.chrome.driver", "C:\\Users\\User\\Downloads\\chromedriver_win32\\chromedriver.exe");
+        driver = new ChromeDriver();
+        driver.manage().window().maximize();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+    }
+
+
+    @Test(priority = 1)
+    public void verifyHomePageLoadsSuccessfully() {
+        driver.get("https://www.amazon.com");
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        Assert.assertEquals(driver.getTitle(), "Amazon.com. Spend less. Smile more.");
+    }
+
+    @Test(priority = 2)
+    public void verifySearchFunctionality() {
+        driver.get("https://www.amazon.com");
+        WebElement searchBox = driver.findElement(By.id("twotabsearchtextbox"));
+        searchBox.sendKeys("iphone 14 pro cases");
+        searchBox.submit();
+        WebElement resultsLabel = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//span[contains(text(), 'results for')]")));
+        Assert.assertTrue(resultsLabel.getText().contains("results for"));
+    }
+
+    @Test(priority = 3)
+    public void verifyUserCanAddItemsToCart() {
+        driver.get("https://www.amazon.com/");
+        WebElement accountButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//a[@id='nav-link-accountList']")));
+        accountButton.click();
+        WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("ap_email")));
+        emailInput.sendKeys("testuserfortestingp@gmail.com");
+        WebElement continueButton = driver.findElement(By.id("continue"));
+        continueButton.click();
+        WebElement passwordInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("ap_password")));
+        passwordInput.sendKeys("Test@123");
+        wait = new WebDriverWait(driver, Duration.ofSeconds(100));
+        WebElement signInSubmitButton = driver.findElement(By.id("signInSubmit"));
+        signInSubmitButton.click();
+        WebElement searchBox = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//input[@id='twotabsearchtextbox']")));
+        searchBox.sendKeys("iphone charger");
+        searchBox.submit();
+        driver.findElement(By.linkText("[Apple MFi Certified] iPhone Fast Charger, 20W USB C Power Delivery Wall Charger Plug with 6ft Type C to Lightning Cable Quick Charging Data Sync Cord for iPhone14 13 12 11 Pro Max Mini Xs Xr X 8 iPad")).click();
+        WebElement addToCartButton = driver.findElement(By.id("add-to-cart-button"));
+        addToCartButton.click();
+        WebElement cart = driver.findElement(By.id("nav-cart"));
+        cart.click();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement cartHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h1[contains(text(), 'Shopping Cart')]")));
+        Assert.assertEquals(cartHeader.getText(), "Shopping Cart");
+
+
+    }
+
+    @AfterTest
+    public void tearDown() {
+        driver.close();
+    }
+
+}
